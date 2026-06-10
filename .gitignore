@@ -1,0 +1,130 @@
+# ==========================================
+# SISTEMA OPERACIONAL
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# PYTHON
+# ==========================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+.venv/
+venv/
+env/
+ENV/
+
+# ==========================================
+# FASTAPI / UVICORN
+# ==========================================
+*.log
+
+# ==========================================
+# NODE / REACT / VITE
+# ==========================================
+node_modules/
+
+dist/
+build/
+
+.vite/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================================
+# AMBIENTES E SEGREDOS
+# ==========================================
+.env
+.env.*
+!.env.example
+
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# ==========================================
+# DOCKER
+# ==========================================
+docker-data/
+runtime-data/
+
+# ==========================================
+# CACHE LOCAL DA APLICAÇÃO
+# ==========================================
+cache.json
+data/cache.json
+
+backend/app/data/cache.json
+
+# ==========================================
+# TESTES
+# ==========================================
+coverage/
+*.coverage
+
+# ==========================================
+# VS CODE
+# ==========================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# ==========================================
+# JETBRAINS
+# ==========================================
+.idea/
+
+# ==========================================
+# AGENTES E MEMÓRIA
+# ==========================================
+.agents/
+.memory/
+
+# ==========================================
+# HUGGING FACE
+# ==========================================
+hf_cache/
+huggingface_cache/
+
+# ==========================================
+# ARQUIVOS TEMPORÁRIOS
+# ==========================================
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# ==========================================
+# RELATÓRIOS LOCAIS
+# ==========================================
+review.md
+hf-test-report.md
+hf-final-review.md
+hf-security-review.md
+hf-deploy-review.md
+hf-dependency-audit.md
+
+# ==========================================
+# ARQUIVOS DE IA
+# ==========================================
+.openai/
+.cursor/
+.codex/
+.claude/

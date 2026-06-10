@@ -1,0 +1,522 @@
+openapi: 3.1.0
+info:
+  title: Sumarizador de Noticias Geopoliticas API
+  version: 0.1.0
+  description: API para coleta RSS, sumarizacao, analise de vies, NER e consulta de noticias geopoliticas analisadas.
+servers:
+  - url: http://localhost:8000
+    description: Desenvolvimento local
+  - url: https://api.example.com
+    description: Producao
+tags:
+  - name: Health
+  - name: Sources
+  - name: Analysis
+  - name: News
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Verifica a saude da API
+      operationId: getHealth
+      responses:
+        "200":
+          description: API disponivel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              examples:
+                ok:
+                  value:
+                    status: ok
+                    version: 0.1.0
+                    environment: development
+                    cache:
+                      backend: json_file
+                      items: 12
+  /sources:
+    get:
+      tags:
+        - Sources
+      summary: Lista fontes RSS configuradas
+      operationId: listSources
+      parameters:
+        - name: enabled
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtra fontes ativas ou inativas.
+        - name: region
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtra por regiao geopolitica.
+      responses:
+        "200":
+          description: Lista de fontes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceListResponse"
+    post:
+      tags:
+        - Sources
+      summary: Adiciona uma fonte RSS
+      operationId: createSource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSourceRequest"
+            examples:
+              aljazeera:
+                value:
+                  name: Al Jazeera World
+                  url: https://www.aljazeera.com/xml/rss/all.xml
+                  region: global
+                  language: en
+                  enabled: true
+      responses:
+        "201":
+          description: Fonte criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Source"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: Fonte ja cadastrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /analyze:
+    post:
+      tags:
+        - Analysis
+      summary: Analisa uma URL de noticia ou feed RSS
+      operationId: analyzeContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeRequest"
+            examples:
+              article:
+                value:
+                  input_type: url
+                  url: https://example.com/geopolitics/article
+                  language: pt
+                  include_entities: true
+              feed:
+                value:
+                  input_type: feed
+                  url: https://example.com/rss.xml
+                  language: en
+                  max_items: 5
+                  include_entities: true
+      responses:
+        "200":
+          description: Analise concluida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "502":
+          description: Falha ao coletar ou processar conteudo externo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /news/latest:
+    get:
+      tags:
+        - News
+      summary: Lista ultimas noticias analisadas
+      operationId: listLatestNews
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: region
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: source_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entity
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtra noticias que contenham uma entidade nomeada.
+      responses:
+        "200":
+          description: Ultimas noticias analisadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LatestNewsResponse"
+  /news/{id}:
+    get:
+      tags:
+        - News
+      summary: Obtem uma noticia analisada pelo ID
+      operationId: getNewsById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Noticia analisada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsAnalysis"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  responses:
+    BadRequest:
+      description: Requisicao invalida
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Recurso nao encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: Erro de validacao
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - environment
+        - cache
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+        version:
+          type: string
+        environment:
+          type: string
+        cache:
+          $ref: "#/components/schemas/CacheStatus"
+    CacheStatus:
+      type: object
+      required:
+        - backend
+        - items
+      properties:
+        backend:
+          type: string
+          enum:
+            - memory
+            - json_file
+        items:
+          type: integer
+          minimum: 0
+    Source:
+      type: object
+      required:
+        - id
+        - name
+        - url
+        - enabled
+        - created_at
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+        region:
+          type:
+            - string
+            - "null"
+        language:
+          type:
+            - string
+            - "null"
+          example: pt
+        enabled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    CreateSourceRequest:
+      type: object
+      required:
+        - name
+        - url
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        url:
+          type: string
+          format: uri
+        region:
+          type: string
+          maxLength: 80
+        language:
+          type: string
+          minLength: 2
+          maxLength: 8
+        enabled:
+          type: boolean
+          default: true
+    SourceListResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Source"
+    AnalyzeRequest:
+      type: object
+      required:
+        - input_type
+        - url
+      properties:
+        input_type:
+          type: string
+          enum:
+            - url
+            - feed
+        url:
+          type: string
+          format: uri
+        language:
+          type: string
+          minLength: 2
+          maxLength: 8
+          default: auto
+        max_items:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 10
+          description: Usado apenas quando `input_type` e `feed`.
+        include_entities:
+          type: boolean
+          default: true
+        force_refresh:
+          type: boolean
+          default: false
+          description: Ignora item em cache e reprocessa a URL.
+    AnalyzeResponse:
+      type: object
+      required:
+        - items
+        - processed_count
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsAnalysis"
+        processed_count:
+          type: integer
+          minimum: 0
+        cached_count:
+          type: integer
+          minimum: 0
+          default: 0
+    LatestNewsResponse:
+      type: object
+      required:
+        - items
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsAnalysis"
+        total:
+          type: integer
+          minimum: 0
+    NewsAnalysis:
+      type: object
+      required:
+        - id
+        - title
+        - url
+        - summary
+        - analysis
+        - bias
+        - entities
+        - processed_at
+      properties:
+        id:
+          type: string
+        source:
+          anyOf:
+            - $ref: "#/components/schemas/SourceRef"
+            - type: "null"
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        published_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        summary:
+          type: string
+        analysis:
+          $ref: "#/components/schemas/GeopoliticalAnalysis"
+        bias:
+          $ref: "#/components/schemas/BiasReport"
+        entities:
+          type: array
+          items:
+            $ref: "#/components/schemas/Entity"
+        processed_at:
+          type: string
+          format: date-time
+    SourceRef:
+      type: object
+      required:
+        - id
+        - name
+        - url
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+        region:
+          type:
+            - string
+            - "null"
+    GeopoliticalAnalysis:
+      type: object
+      required:
+        - key_points
+        - actors
+        - regions
+        - risk_level
+      properties:
+        key_points:
+          type: array
+          items:
+            type: string
+        actors:
+          type: array
+          items:
+            type: string
+        regions:
+          type: array
+          items:
+            type: string
+        risk_level:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - unknown
+        context:
+          type: string
+    BiasReport:
+      type: object
+      required:
+        - label
+        - score
+        - signals
+      properties:
+        label:
+          type: string
+          enum:
+            - low
+            - moderate
+            - high
+            - unknown
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        signals:
+          type: array
+          items:
+            type: string
+    Entity:
+      type: object
+      required:
+        - text
+        - label
+      properties:
+        text:
+          type: string
+        label:
+          type: string
+          examples:
+            - PERSON
+            - ORG
+            - GPE
+            - LOC
+        confidence:
+          type:
+            - number
+            - "null"
+          minimum: 0
+          maximum: 1
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+

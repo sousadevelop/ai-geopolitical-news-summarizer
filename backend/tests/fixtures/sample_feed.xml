@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Fixture Geopolitical Feed</title>
+    <language>en-US</language>
+    <item>
+      <title>Border talks resume in Geneva</title>
+      <link>https://news.example.com/articles/border-talks</link>
+      <pubDate>Tue, 09 Jun 2026 12:00:00 GMT</pubDate>
+      <description><![CDATA[Diplomats from regional powers resumed border talks in Geneva after weeks of sanctions and troop movements.]]></description>
+    </item>
+    <item>
+      <title>Pacific alliance expands patrols</title>
+      <link>https://news.example.com/articles/pacific-patrols</link>
+      <pubDate>Tue, 09 Jun 2026 13:00:00 GMT</pubDate>
+      <description><![CDATA[The alliance announced coordinated maritime patrols after a series of missile tests near disputed waters.]]></description>
+    </item>
+  </channel>
+</rss>
