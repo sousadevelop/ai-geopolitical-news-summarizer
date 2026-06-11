@@ -80,6 +80,47 @@ def test_analyze_feed_uses_fixture_and_respects_max_items(client: TestClient) ->
     assert payload["items"][0]["title"] == "Border talks resume in Geneva"
 
 
+def test_analyze_feed_builds_source_ref_from_feed_title(client: TestClient, cache: NewsCache) -> None:
+    feed_url = "https://feeds.example.com/geopolitics.xml"
+
+    response = client.post(
+        "/analyze",
+        json={"input_type": "feed", "url": feed_url, "max_items": 1},
+    )
+
+    assert response.status_code == 200
+    source = response.json()["items"][0]["source"]
+    assert source == {
+        "id": f"src_{cache.cache_key_for_url(feed_url)[:12]}",
+        "name": "Fixture Geopolitical Feed",
+        "url": feed_url,
+        "region": None,
+    }
+
+
+def test_analyze_feed_backfills_source_on_cached_items(client: TestClient, cache: NewsCache) -> None:
+    feed_url = "https://feeds.example.com/geopolitics.xml"
+
+    first = client.post(
+        "/analyze",
+        json={"input_type": "feed", "url": feed_url, "max_items": 1},
+    )
+    cached = cache.get_by_url(first.json()["items"][0]["url"])
+    assert cached is not None
+    cache.upsert_news(cached.model_copy(update={"source": None}))
+
+    second = client.post(
+        "/analyze",
+        json={"input_type": "feed", "url": feed_url, "max_items": 1},
+    )
+
+    assert second.status_code == 200
+    payload = second.json()
+    assert payload["processed_count"] == 0
+    assert payload["cached_count"] == 1
+    assert payload["items"][0]["source"]["name"] == "Fixture Geopolitical Feed"
+
+
 @pytest.mark.asyncio
 async def test_analyze_feed_skips_rss_items_blocked_by_url_policy(cache: NewsCache) -> None:
     class BlockedFetcher:

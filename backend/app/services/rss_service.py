@@ -22,6 +22,7 @@ class RssItem:
     content: str
     published_at: datetime | None
     language: str | None
+    source_name: str | None = None
 
 
 class RssService:
@@ -42,6 +43,7 @@ class RssService:
         limit = min(max_items, 20)
         char_limit = max_chars or settings.rss_entry_max_chars
         feed_language = self._normalize_language(parsed.feed.get("language"))
+        feed_title = self._clean(parsed.feed.get("title") or "") or None
         items: list[RssItem] = []
         for entry in parsed.entries[:limit]:
             link = entry.get("link") or entry.get("id") or final_url
@@ -59,6 +61,7 @@ class RssService:
                     content=content[:char_limit],
                     published_at=self._entry_datetime(entry),
                     language=self._normalize_language(entry.get("language")) or feed_language,
+                    source_name=feed_title,
                 )
             )
         return items
@@ -99,4 +102,3 @@ class RssService:
         if not value:
             return None
         return value.split("-")[0]
-

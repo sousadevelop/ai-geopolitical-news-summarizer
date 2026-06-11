@@ -111,12 +111,10 @@ h3 {
 }
 
 .brand span:not(.brand-mark) {
-  max-width: 168px;
+  max-width: 180px;
   color: #aebcc5;
   font-size: 0.77rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.3;
 }
 
 .nav-list {
@@ -537,16 +535,33 @@ h3 {
   gap: 6px;
 }
 
-.field span {
+.field span,
+.field > label {
   color: var(--muted);
   font-size: 0.86rem;
   font-weight: 700;
+}
+
+.field-help {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.field-help code {
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.analysis-language-field {
+  grid-column: 1 / -1;
 }
 
 .check-row {

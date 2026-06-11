@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from urllib.parse import urlparse
 
 from app.errors import ApiError
-from app.models.schemas import AnalyzeRequest, AnalyzeResponse, GeopoliticalAnalysis, NewsAnalysis
+from app.models.schemas import AnalyzeRequest, AnalyzeResponse, GeopoliticalAnalysis, NewsAnalysis, SourceRef
 from app.services.article_fetcher import ArticleContent, ArticleFetcher
 from app.services.bias_analyzer import BiasAnalyzer
 from app.services.ner_service import LightNerService
@@ -46,12 +47,23 @@ class AnalysisService:
     async def _analyze_feed(self, request: AnalyzeRequest) -> AnalyzeResponse:
         rss_items = await self.rss_service.fetch(request.url, max_items=request.max_items)
         source = self.cache.source_ref_for_url(request.url)
+        if source is None and rss_items:
+            source_name = rss_items[0].source_name or urlparse(request.url).hostname
+            if source_name:
+                source = SourceRef(
+                    id=f"src_{self.cache.cache_key_for_url(request.url)[:12]}",
+                    name=source_name,
+                    url=request.url,
+                )
         output: list[NewsAnalysis] = []
         cached_count = 0
         processed_count = 0
         for rss_item in rss_items:
             cached = None if request.force_refresh else self.cache.get_by_url(rss_item.url)
             if cached:
+                if cached.source is None and source is not None:
+                    cached = cached.model_copy(update={"source": source})
+                    self.cache.upsert_news(cached)
                 output.append(cached)
                 cached_count += 1
                 continue

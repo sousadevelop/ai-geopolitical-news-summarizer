@@ -1,6 +1,6 @@
 # Desenvolvimento
 
-Use `backend/requirements-dev.txt` no desenvolvimento. O Dockerfile e qualquer runtime de producao devem usar `backend/requirements.txt`.
+Use `backend/requirements-dev.txt` no desenvolvimento. O Dockerfile e qualquer runtime de produção devem usar `backend/requirements.txt`.
 
 ## Requisitos locais
 
@@ -32,7 +32,7 @@ cd backend
 python -m pytest
 ```
 
-Validacao registrada em 2026-06-10: 8/8 passaram, com 1 warning de deprecacao em `fastapi.testclient`/Starlette.
+Validação registrada em 2026-06-10: 8/8 passaram, com 1 warning de depreciação em `fastapi.testclient`/Starlette.
 
 ## Frontend
 
@@ -57,23 +57,23 @@ npm run build
 npm audit --audit-level=moderate
 ```
 
-Validacoes registradas em 2026-06-10:
+Validações registradas em 2026-06-10:
 
 - `npm run test`: 4 arquivos e 8/8 testes passaram.
 - `npm run build`: passou.
 - `npm audit --audit-level=moderate`: 0 vulnerabilities.
-- Build e execucao local do Docker: validados.
+- Build e execução local do Docker: validados.
 
-## Variaveis de ambiente
+## Variáveis de ambiente
 
 ### Backend
 
-| Variavel | Default | Observacao |
+| Variável | Default | Observação |
 | --- | --- | --- |
-| `APP_ENV` | `development` | Tambem usado para preencher `ENVIRONMENT` no container. |
-| `ENVIRONMENT` | valor de `APP_ENV` | Tem precedencia no codigo quando definido. |
-| `PORT` | `8000` | Mantido como configuracao de ambiente; o `CMD` JSON do Space usa porta fixa 8000. |
-| `CORS_ORIGINS` | localhost em dev, vazio fora de dev | Lista separada por virgula. |
+| `APP_ENV` | `development` | Também usado para preencher `ENVIRONMENT` no container. |
+| `ENVIRONMENT` | valor de `APP_ENV` | Tem precedência no código quando definido. |
+| `PORT` | `8000` | Mantido como configuração de ambiente; o `CMD` JSON do Space usa porta fixa 8000. |
+| `CORS_ORIGINS` | localhost em dev, vazio fora de dev | Lista separada por vírgula. |
 | `CACHE_PATH` | vazio | Quando definido, ativa cache JSON. |
 | `CACHE_MAX_ITEMS` | `500` | Limite do cache local. |
 | `REQUEST_TIMEOUT_SECONDS` | `10` | Timeout dos downloads externos. |
@@ -81,33 +81,46 @@ Validacoes registradas em 2026-06-10:
 | `REQUEST_MAX_REDIRECTS` | `5` | Limite de redirecionamentos manuais. |
 | `RSS_ENTRY_MAX_CHARS` | `20000` | Limite de texto usado por item RSS. |
 | `SUMMARY_PROVIDER` | `local_extractive` | Provider atual de resumo. |
-| `LLM_API_KEY` | vazio | Reservado para provider remoto futuro. |
 
 ### Frontend
 
-| Variavel | Exemplo |
+| Variável | Exemplo |
 | --- | --- |
 | `VITE_API_BASE_URL` | `http://localhost:8000` |
 
-Variaveis `VITE_` sao embutidas no bundle. Nao coloque segredos no frontend.
-No Netlify, use `VITE_API_BASE_URL=https://ysolis-geopolitical-news-api.hf.space`; nao grave a URL no codigo.
+Variáveis `VITE_` são embutidas no bundle. Não coloque segredos no frontend.
+No Netlify, use `VITE_API_BASE_URL=https://ysolis-geopolitical-news-api.hf.space`; não grave a URL no código.
 
 ## Contrato da API
 
-O contrato canonico esta em [`../openapi.yaml`](../openapi.yaml). Atualize o OpenAPI junto com qualquer mudanca de endpoint, schema ou codigo de erro.
+O contrato canônico está em [`../openapi.yaml`](../openapi.yaml). Atualize o OpenAPI junto com qualquer mudança de endpoint, schema ou código de erro.
 
 ## Fluxo sugerido
 
 1. Inicie o backend e valide `/health`.
 2. Inicie o frontend com `VITE_API_BASE_URL` apontando para o backend local.
 3. Teste `POST /analyze` com uma URL ou feed controlado.
-4. Rode os testes do backend e do frontend antes de fechar a mudanca.
-5. Atualize docs quando comandos, variaveis ou contrato mudarem.
+4. Rode os testes do backend e do frontend antes de fechar a mudança.
+5. Atualize docs quando comandos, variáveis ou contrato mudarem.
 
-## Notas de manutencao
+![Dashboard sem notícias processadas](assets/screenshots/dashboard-empty.png)
 
-- `requirements.txt` deve conter apenas dependencias de runtime.
+## Validação manual
+
+Use a tela **Sources** para cadastrar um RSS e a tela **Analyze** para processar o feed. O exemplo abaixo usa o feed da BBC.
+
+![Cadastro de fonte RSS](assets/screenshots/sources-rss.png)
+
+![Análise de feed RSS](assets/screenshots/analyze-rss-result.png)
+
+## Notas de manutenção
+
+- `requirements.txt` deve conter apenas dependências de runtime.
 - `requirements-dev.txt` deve incluir `-r requirements.txt` e ferramentas de teste/desenvolvimento.
-- Itens RSS com `blocked_url` ou `invalid_url` sao pulados durante analise de feed.
-- O cache local facilita a v1, mas nao substitui banco para historico duravel ou multiplas replicas.
-- No Space, `CACHE_PATH=/data/cache.json` depende do runtime e do storage configurados e pode nao oferecer persistencia duravel.
+- Itens RSS com `blocked_url` ou `invalid_url` são pulados durante análise de feed.
+- Prefira RSS em testes manuais. Sites podem bloquear a coleta de uma URL direta; use, por exemplo, `https://feeds.bbci.co.uk/news/world/rss.xml`.
+- `language` orienta o idioma preferencial da análise, mas não traduz o conteúdo na v1.
+- A v1 não usa LLM nem oferece tradução.
+- Feed direto sem fonte cadastrada usa o título do feed como origem; sem título, usa o domínio da URL.
+- O cache local facilita a v1, mas não substitui banco para histórico durável ou múltiplas réplicas.
+- No Space, `CACHE_PATH=/data/cache.json` depende do runtime e do storage configurados e pode não oferecer persistência durável.

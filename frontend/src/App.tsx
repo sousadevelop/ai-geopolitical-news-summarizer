@@ -1,7 +1,6 @@
 import { Activity, BarChart3, Rss } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { apiClient } from "./api/client";
 import { Analyze } from "./pages/Analyze";
 import { Dashboard } from "./pages/Dashboard";
 import { Sources } from "./pages/Sources";
@@ -23,8 +22,8 @@ export default function App() {
         <div className="brand">
           <span className="brand-mark">G</span>
           <div>
-            <strong>GeoNews</strong>
-            <span>{apiClient.baseUrl}</span>
+            <strong>GeoPolaris</strong>
+            <span>Análise de notícias geopolíticas</span>
           </div>
         </div>
 

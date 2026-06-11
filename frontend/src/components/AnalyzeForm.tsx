@@ -38,16 +38,37 @@ export function AnalyzeForm({ onSubmit, isSubmitting }: AnalyzeFormProps) {
         </select>
       </label>
 
-      <label className="field">
-        <span>URL</span>
-        <input name="url" type="url" placeholder="https://..." required />
-      </label>
+      <div className="field">
+        <label htmlFor="analyze-url">URL</label>
+        <input
+          id="analyze-url"
+          name="url"
+          type="url"
+          placeholder="https://..."
+          aria-describedby="analyze-url-help"
+          required
+        />
+        <small className="field-help" id="analyze-url-help">
+          RSS é mais confiável que uma URL direta. Exemplo:{" "}
+          <code>https://feeds.bbci.co.uk/news/world/rss.xml</code>
+        </small>
+      </div>
 
       <div className="form-grid">
-        <label className="field">
-          <span>Idioma</span>
-          <input name="language" defaultValue="auto" minLength={2} maxLength={8} />
-        </label>
+        <div className="field analysis-language-field">
+          <label htmlFor="analysis-language">Idioma preferencial da análise</label>
+          <input
+            id="analysis-language"
+            name="language"
+            defaultValue="auto"
+            minLength={2}
+            maxLength={8}
+            aria-describedby="analysis-language-help"
+          />
+          <small className="field-help" id="analysis-language-help">
+            Orienta a análise, mas não traduz o conteúdo.
+          </small>
+        </div>
         <label className="field">
           <span>Max. itens</span>
           <input name="max_items" type="number" defaultValue={10} min={1} max={20} />

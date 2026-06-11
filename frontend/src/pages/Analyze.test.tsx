@@ -74,6 +74,15 @@ describe("Analyze", () => {
     expect(screen.getByText("1 processadas - 0 cache")).toBeTruthy();
   });
 
+  it("explains RSS reliability and the analysis language behavior", () => {
+    render(<Analyze />);
+
+    expect(screen.getByText(/RSS é mais confiável que uma URL direta/i)).toBeVisible();
+    expect(screen.getByText("https://feeds.bbci.co.uk/news/world/rss.xml")).toBeVisible();
+    expect(screen.getByLabelText(/Idioma preferencial da análise/i)).toHaveValue("auto");
+    expect(screen.getByText("Orienta a análise, mas não traduz o conteúdo.")).toBeVisible();
+  });
+
   it("shows errors returned by the API client", async () => {
     const user = userEvent.setup();
     mockedApi.analyze.mockRejectedValue(new Error("URL invalida."));
